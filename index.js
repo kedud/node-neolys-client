@@ -19,8 +19,8 @@ class Neolys {
     authenticate = () => {
         return new Promise((resolve, reject) => {
             let data = new FormData();
-            data.append('log', login);
-            data.append('Pass', password);
+            data.append('log', this.username);
+            data.append('Pass', this.password);
 
             axios({
                     method: 'post',
@@ -128,12 +128,10 @@ class Neolys {
     }
 
     getOrders = (params) => {
-        this.api({
-            method: 'search_order_export', 
-            params,
-        }).then(data => {
-            return data;
-        });
+      return this.api({
+        method: 'search_order_export',
+        params,
+      });
     }
 }
 
