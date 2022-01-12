@@ -53,7 +53,7 @@ class Neolys {
         });
     }
 
-    methodCall = ({method, params}) => {
+    methodCall = ({method, params, columns}) => {
         return new Promise((resolve, reject) => {
             let data = new FormData();
             for (const [key, value] of Object.entries(params)) {
@@ -76,12 +76,13 @@ class Neolys {
                     reject(Error('unauthorized'));
                     return;
                 }
-                else {
+                else {
+                  // console.log('response.data', response.data);
                     const records = parse(response.data, {
                         delimiter: ';',
                         relax: true,
                         trim: true,
-                        columns: true,
+                        columns: columns || true,
                         skip_empty_lines: true
                     });
                     
@@ -96,18 +97,18 @@ class Neolys {
         })
     }
 
-    api = ({method= '', params= {}} = {}) => {
+    api = ({method= '', params= {}, columns=true} = {}) => {
         return new Promise((resolve, reject) => {
             
             if (this.sessionId) {
-                this.methodCall({method, params})
+                this.methodCall({method, params, columns})
                 .catch(e => {
                     console.log("error", e.message);
                     if (e.message == 'unauthorized') {
                         // login and try again
                         this.authenticate().then(r => {
                             this.setSessionId(r);
-                            this.methodCall({method, params})
+                            this.methodCall({method, params, columns})
                             .then(r => resolve(r));
                         })
                     }
@@ -117,7 +118,7 @@ class Neolys {
                 // login first
                 this.authenticate().then(r => {
                     this.setSessionId(r);
-                    this.methodCall({method, params})
+                    this.methodCall({method, params, columns})
                     .then(r => resolve(r))
                     .catch(e => {
                         console.log("after auth", e.message);
@@ -127,10 +128,12 @@ class Neolys {
         });
     }
 
-    getOrders = (params) => {
+  getOrders = (params) => {
+      const columns = ['corp', 'unit', 'order_id', 'created_at', 'company', 'shipping_last_name', 'shipping_first_name', 'email', 'carrier_code', '_2', 'processed_at', '_4', 'carrier', 'carrier_parcel_id', 'zip', 'country_code', 'weight'];
       return this.api({
         method: 'search_order_export',
         params,
+        columns
       });
     }
 }
